@@ -1,15 +1,23 @@
 import express from "express";
 import cors from "cors";
 import { imageRouter } from "./routes/image.route.js";
-import { connectDB } from "./config/connectDB.js";
+import mongoose from "mongoose";
 
 
-try {
-    connectDB();
-    console.log("mongo connected");
-} catch (error) {
-    console.log(error);
+
+export const connectDB = async () => {
+    try {
+        const res = await mongoose.connect(process.env.MongoDB); 
+        if (!res){
+           console.log("mongodb not connected")
+        }
+        console.log("mongobd connected")
+    } catch (error) {
+        console.log(error)
+        
+    }
 }
+connectDB();
 const app = express();
 app.use(express.json());
 app.use(cors());
