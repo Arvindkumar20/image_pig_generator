@@ -1,5 +1,5 @@
 import express from 'express';
- import {createImage, getAllImages} from '../controllers/image.controller.js';
+ import {createImage, deleteImage, getAllImages} from '../controllers/image.controller.js';
 
  const router = express.Router();
 
@@ -8,5 +8,6 @@ import express from 'express';
  });
  router.post("/generate-image", createImage);
  router.get("/all-image", getAllImages);
+ router.delete("/delete/:id", deleteImage);
 
  export const imageRouter = router;

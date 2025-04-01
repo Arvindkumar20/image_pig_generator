@@ -1,6 +1,15 @@
 import { generateImage } from "../utils/generateimage.js";
 import { cloudinaryStore } from "../utils/cloudinary.js";
 import { Image } from "../models/images.model.js";
+import { v2 as cloudinary } from "cloudinary"; // Ensure Cloudinary is properly configured
+
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 export const createImage = async (req, res) => {
   const { prompt, author } = req.body;
   if (!prompt) {
@@ -54,3 +63,34 @@ export const getAllImages = async (req, res) => {
     response,
   });
 };
+
+
+export const deleteImage = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // 1️⃣ Find the image by ID
+    const image = await Image.findById(id);
+    if (!image) {
+      return res.status(404).json({ message: "Image not found for this ID" });
+    }
+
+    // 2️⃣ Extract the public ID from the image URL
+    const publicId = image.imageUrl.split("/").pop().split(".")[0]; // Extracts only the public ID
+
+    // 3️⃣ Delete the image from Cloudinary
+    const response = await cloudinary.uploader.destroy(publicId);
+    if (response.result !== "ok") {
+      return res.status(500).json({ message: "Failed to delete image from Cloudinary" });
+    }
+
+    // 4️⃣ Remove the image from the database
+    await Image.findByIdAndDelete(id);
+
+    return res.json({ message: "Image deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting image:", error);
+    return res.status(500).json({ message: "Server error", error });
+  }
+};
+
